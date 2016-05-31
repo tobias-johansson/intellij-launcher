@@ -4,7 +4,7 @@ g=$(tput setaf 2)
 b=$(tput setaf 4)
 rs=$(tput sgr0)
 
-idea_sh='/var/lib/idea-IC-145.258.11/bin/idea.sh'
+idea_sh='/var/lib/idea-IC-145.972.3/bin/idea.sh'
 
 file="$1"
 
@@ -13,7 +13,14 @@ if [[ -z "$file" ]]; then
   $idea_sh
 else
   file_abs=$(realpath "$file")
-  dir=$(dirname "$file_abs")
+
+  # Arg is dir or file
+  if [[ -d "$file_abs" ]]; then
+    dir="$file_abs"
+  else
+    dir=$(dirname "$file_abs")
+  fi
+
   project="$dir"
 
   # Find outermost project dir
@@ -23,7 +30,16 @@ else
     fi
     dir=$(realpath "$dir/..")
   done
+
+  # Show info
   file_rel=${file_abs#$project}
   echo "Opening ${g}${project}${b}${file_rel}${rs}"
-  exec $idea_sh "$project" --line 1 "$file"  > /dev/null 2>&1 &
+
+  # Launch
+  if [[ -d "$file_abs" ]]; then
+    exec $idea_sh "$project" > /dev/null 2>&1 &
+  else
+    exec $idea_sh "$project" --line 1 "$file"  > /dev/null 2>&1 &
+  fi
+
 fi
