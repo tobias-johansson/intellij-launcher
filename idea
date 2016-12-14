@@ -1,10 +1,11 @@
 #!/bin/bash
 
+r=$(tput setaf 1)
 g=$(tput setaf 2)
 b=$(tput setaf 4)
 rs=$(tput sgr0)
 
-idea_sh='/var/lib/idea-IC-145.972.3/bin/idea.sh'
+idea_sh='/var/lib/idea-IC-162.2032.8/bin/idea.sh'
 
 file="$1"
 
@@ -17,19 +18,28 @@ else
   # Arg is dir or file
   if [[ -d "$file_abs" ]]; then
     dir="$file_abs"
-  else
+  elif [[ -f "$file_abs" ]]; then
     dir=$(dirname "$file_abs")
+  else
+    echo "${r}Not found: ${file_abs}${rs}" >&2
+    exit 1
   fi
 
-  project="$dir"
+  dir_given="$dir"
 
   # Find outermost project dir
-  while [[ "$dir" != "/" ]]; do
+  while [[ "$dir" != "/" && -z "$project" ]]; do
     if [[ -d "$dir/.idea" ]]; then
       project="$dir"
     fi
     dir=$(realpath "$dir/..")
   done
+
+  # None found, use given dir
+  if [[ -z "$project" ]]; then
+    project="$dir_given"
+  fi
+
 
   # Show info
   file_rel=${file_abs#$project}
